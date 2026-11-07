@@ -36,3 +36,43 @@ button{background:linear-gradient(135deg,#c36a91,#a94c79);border-color:#f9bfd0;b
 .cast-card canvas{display:block;width:84px;height:84px;aspect-ratio:1;border:1px solid #f7bcd0a8;border-radius:50%;box-shadow:0 4px 16px #160e2940}
 .cast-heart{color:#ffb4cf;font:32px Georgia,serif}
 @media(max-width:700px){.cast{gap:13px;padding:7px;margin-bottom:7px;border-radius:13px}.cast-card{gap:8px;font-size:15px}.cast-card canvas{width:64px;height:64px}.cast-heart{font-size:23px}}
+
+/* Los controles tienen su propia fila: nunca tapan el escenario. */
+@media(pointer:coarse),(max-width:900px){
+ html{height:100%;height:100dvh}
+ body{min-height:100%;overscroll-behavior:none}
+ #app{padding:6px max(6px,env(safe-area-inset-right)) 6px max(6px,env(safe-area-inset-left))}
+ #game-wrap{display:grid;grid-template-rows:auto auto;touch-action:none}
+ #game{width:100%;height:auto;aspect-ratio:16/9}
+ #touch{position:relative;display:flex;inset:auto;align-items:center;gap:12px;min-height:76px;padding:8px 12px max(8px,env(safe-area-inset-bottom));background:#21182e;border-top:1px solid #f5c8db38}
+ #touch button{min-width:64px;height:56px;padding:8px 18px;opacity:1;border-radius:15px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+ #touch button:last-child{min-width:110px}
+ .cinematic #touch{display:none}
+ .overlay{padding:8px}
+ .panel{max-height:100%;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+}
+
+/* En horizontal, manda la altura disponible, incluida la barra del navegador. */
+@media(orientation:landscape) and (max-height:600px){
+ html,body{height:100%;height:100dvh;min-height:0;overflow:hidden}
+ body{display:block}
+ #app{height:100%;width:100%;max-width:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:max(3px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))}
+ header{flex:0 0 30px;min-height:30px;width:100%;padding:0 3px;font-size:10px;letter-spacing:0}
+ header>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ header div{flex-shrink:0}
+ header button{padding:4px 10px;font-size:11px;min-height:28px}
+ .cast,footer{display:none}
+ #game-wrap{flex:0 1 auto;display:grid;grid-template-rows:auto auto;border-radius:10px;width:min(100%,calc((100dvh - 110px - env(safe-area-inset-top) - env(safe-area-inset-bottom))*16/9));margin:auto;min-height:0;animation:none}
+ #game{width:100%;height:auto;aspect-ratio:16/9}
+ #touch{position:relative;display:flex;inset:auto;min-height:64px;height:64px;padding:5px 10px;gap:10px;align-items:center;background:#21182e;border-top:1px solid #f5c8db38}
+ #touch button{min-width:66px;height:52px;padding:6px 15px;opacity:1;user-select:none;-webkit-user-select:none}
+ #touch button:last-child{min-width:110px}
+ .cinematic #touch{display:none}
+ .panel{padding:10px 16px;max-height:100%}
+ .panel h1{font-size:24px;margin-bottom:8px}.panel h2{font-size:19px;margin-bottom:6px}
+ .panel p{font-size:14px;line-height:1.4;margin:8px 0}
+ .panel .small{font-size:12px!important}
+ .panel button{font-size:14px;padding:8px 13px;margin:4px}
+ .panel .letter{max-height:36dvh;padding:10px;font-size:14px}
+ #reunion-next{right:8px;bottom:8px;font-size:11px;padding:7px 10px}
+}

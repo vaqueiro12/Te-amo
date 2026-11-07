@@ -16,6 +16,8 @@ function resizeCanvas(){
  if(canvas.width!==nextWidth||canvas.height!==nextHeight){canvas.width=nextWidth;canvas.height=nextHeight;ctx.setTransform(nextWidth/W,0,0,nextHeight/H,0,0)}
 }
 window.addEventListener('resize',resizeCanvas);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',resizeCanvas);
+window.addEventListener('orientationchange',()=>requestAnimationFrame(resizeCanvas));
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(resizeCanvas).observe(canvas);
 const motion={cycle:0,run:0,facing:1,land:0};
 function animateMotion(dt){const k=1-Math.exp(-dt/95);const speed=phase==='play'&&player.on?Math.abs(player.vx)/4.4:0;motion.run+=(speed-motion.run)*k;motion.cycle+=Math.abs(player.vx)*dt*.0028;if(Math.abs(player.vx)>.2)motion.facing+=(Math.sign(player.vx)-motion.facing)*(1-Math.exp(-dt/110));motion.land*=Math.exp(-dt/90)}
@@ -157,7 +159,7 @@ function damage(fall){
  else{player.x=adventure.checkpoint.x;player.y=adventure.checkpoint.y;player.vx=player.vy=0;player.on=false;player.inv=1800}
 }
 function loop(t){let dt=Math.min(t-last||16,35);last=t;update(dt);render();requestAnimationFrame(loop)}
-function tone(freq,dur){if(!musicOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
+function tone(freq,dur){if(!musicOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.14,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
 let note=0;setInterval(()=>{if(musicOn&&phase!=='menu')tone([392,494,587,659,587,494,440,523][note++%8],.35)},430);
 document.querySelector('#music').onclick=()=>{musicOn=!musicOn;document.querySelector('#music').textContent='♫ Música: '+(musicOn?'ON':'OFF');if(musicOn)tone(523,.3)};
 document.querySelector('#reset').onclick=()=>{if(confirm('¿Reiniciar el progreso desde el nivel 1?')){localStorage.removeItem('michel_level');level=0;menu()}};
