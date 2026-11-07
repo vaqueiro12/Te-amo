@@ -8,8 +8,20 @@ const LEVELS=[
 ];
 const LETTER=`Mi amor, Michel: ♡\n\n¿Quién diría que hace ya casi 4 meses llegaste a mi vida sin imaginar todo lo que ibas a provocar en mí?\n\nNo sé en qué momento tus mensajes comenzaron a alegrarme tanto los días, ni cuándo tu sonrisa se volvió una de mis cosas favoritas. Solo sé que, entre tantas personas, tuve la suerte de encontrarte a ti.\n\nHoy quiero que sea nuestro último día siendo ligues, nuestro último día siendo un «casi algo». No porque quiera alejarme, sino porque quiero estar mucho más cerca de ti.\n\nQuiero elegirte, cuidarte, respetarte, compartir aventuras, acompañarte en los días bonitos y también en los difíciles. No te prometo días perfectos, pero sí intenciones sinceras.\n\nSi este pequeño juego te trajo hasta aquí, es porque de todas las historias que podría vivir, la que más ilusión me hace comenzar es una contigo.\n\nCon todo mi cariño,\nAlexis ❤️`;
 const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),overlay=document.querySelector('#overlay'),panel=document.querySelector('#panel');
-const W=960,H=540,GROUND=458;let level=0,world=0,items=[],platforms=[],hazards=[],player={x:55,y:300,vx:0,vy:0,w:28,h:90,on:false,inv:0},count=0,lives=3,camera=0,phase='menu',time=0,particles=[],musicOn=false,audio=null,last=0;
+const W=960,H=540,GROUND=458;let level=0,world=0,items=[],platforms=[],hazards=[],player={x:55,y:300,vx:0,vy:0,w:28,h:90,on:false,inv:0},count=0,lives=3,camera=0,phase='menu',time=0,particles=[],musicOn=true,audio=null,last=0;
+function fitPhoneViewport(){
+ const view=window.visualViewport;
+ const width=view?view.width:window.innerWidth,height=view?view.height:window.innerHeight;
+ const touch=window.matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
+ const compact=width>height&&(touch||height<=650);
+ document.body.classList.toggle('phone-landscape',compact);
+ const root=document.documentElement.style;
+ root.setProperty('--visible-width',width+'px');root.setProperty('--visible-height',height+'px');
+ root.setProperty('--visible-left',(view?view.offsetLeft:0)+'px');root.setProperty('--visible-top',(view?view.offsetTop:0)+'px');
+ root.setProperty('--stage-width',Math.max(100,Math.min(width-24,(height-116)*16/9))+'px');
+}
 function resizeCanvas(){
+ fitPhoneViewport();
  const displayedWidth=canvas.getBoundingClientRect().width||W;
  const resolution=Math.min(3,Math.max(2,displayedWidth/W*(window.devicePixelRatio||1)));
  const nextWidth=Math.round(W*resolution),nextHeight=Math.round(H*resolution);
@@ -159,12 +171,37 @@ function damage(fall){
  else{player.x=adventure.checkpoint.x;player.y=adventure.checkpoint.y;player.vx=player.vy=0;player.on=false;player.inv=1800}
 }
 function loop(t){let dt=Math.min(t-last||16,35);last=t;update(dt);render();requestAnimationFrame(loop)}
-function tone(freq,dur){if(!musicOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.14,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
+let audioOutput=null;
+function unlockAudio(){
+ try{
+  audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+  if(!audioOutput){audioOutput=audio.createDynamicsCompressor();audioOutput.threshold.value=-10;audioOutput.ratio.value=8;audioOutput.connect(audio.destination)}
+  if(audio.state==='suspended')audio.resume();
+ }catch(e){}
+}
+function tone(freq,dur){
+ if(!musicOn)return;unlockAudio();if(!audio||!audioOutput)return;
+ const o=audio.createOscillator(),g=audio.createGain(),now=audio.currentTime;
+ o.type='triangle';o.frequency.value=freq;
+ g.gain.setValueAtTime(.001,now);g.gain.linearRampToValueAtTime(.45,now+.012);
+ g.gain.exponentialRampToValueAtTime(.18,now+dur*.7);g.gain.exponentialRampToValueAtTime(.001,now+dur);
+ o.connect(g);g.connect(audioOutput);o.onended=()=>{o.disconnect();g.disconnect()};o.start();o.stop(now+dur);
+}
+document.addEventListener('pointerdown',()=>{if(musicOn)unlockAudio()},{capture:true});
+// En teléfonos el permiso de sonido se concede al soltar el primer toque.
+for(const event of ['pointerup','touchend','click'])document.addEventListener(event,()=>{if(musicOn)unlockAudio()},{capture:true,passive:true});
 let note=0;setInterval(()=>{if(musicOn&&phase!=='menu')tone([392,494,587,659,587,494,440,523][note++%8],.35)},430);
 document.querySelector('#music').onclick=()=>{musicOn=!musicOn;document.querySelector('#music').textContent='♫ Música: '+(musicOn?'ON':'OFF');if(musicOn)tone(523,.3)};
 document.querySelector('#reset').onclick=()=>{if(confirm('¿Reiniciar el progreso desde el nivel 1?')){localStorage.removeItem('michel_level');level=0;menu()}};
 document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(['ArrowLeft','KeyA'].includes(e.code))keys.left=true;if(['ArrowRight','KeyD'].includes(e.code))keys.right=true;if(['ArrowUp','Space','KeyW'].includes(e.code))keys.jump=true;if(e.code==='KeyE'&&phase==='play'&&player.x>world-150&&exitReady())complete()});document.addEventListener('keyup',e=>{if(['ArrowLeft','KeyA'].includes(e.code))keys.left=false;if(['ArrowRight','KeyD'].includes(e.code))keys.right=false;if(['ArrowUp','Space','KeyW'].includes(e.code))keys.jump=false});
-document.querySelectorAll('#touch button').forEach(b=>{const k=b.dataset.key;for(const ev of ['pointerdown','pointerup','pointercancel','pointerleave'])b.addEventListener(ev,e=>{e.preventDefault();keys[k]=ev==='pointerdown';if(ev==='pointerdown')b.setPointerCapture(e.pointerId)})});
+document.querySelectorAll('#touch button').forEach(b=>{
+ const k=b.dataset.key,held=new Set();
+ b.addEventListener('pointerdown',e=>{e.preventDefault();held.add(e.pointerId);keys[k]=true;b.setPointerCapture(e.pointerId);if(musicOn)unlockAudio()},{passive:false});
+ for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,e=>{e.preventDefault();held.delete(e.pointerId);keys[k]=held.size>0},{passive:false});
+ for(const ev of ['contextmenu','selectstart','dragstart','touchstart'])b.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+});
+document.querySelector('#game-wrap').addEventListener('contextmenu',e=>e.preventDefault());
+
 
 let effects=[],floaters=[],shake=0,squash=0,dustClock=0,arrival=0,reunionTime=0,reunionReturn=null;
 function burst(x,y,color,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=1+Math.random()*3;effects.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1,life:550+Math.random()*400,max:950,color,size:2+Math.random()*4})}if(effects.length>260)effects.splice(0,effects.length-260)}

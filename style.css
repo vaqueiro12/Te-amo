@@ -76,3 +76,20 @@ button{background:linear-gradient(135deg,#c36a91,#a94c79);border-color:#f9bfd0;b
  .panel .letter{max-height:36dvh;padding:10px;font-size:14px}
  #reunion-next{right:8px;bottom:8px;font-size:11px;padding:7px 10px}
 }
+
+/* Ajuste al visualViewport, incluso con zoom o barras del navegador abiertas. */
+body.phone-landscape{display:block;overflow:hidden;min-height:0;height:var(--visible-height)}
+.phone-landscape #app{position:fixed;left:var(--visible-left);top:var(--visible-top);width:var(--visible-width);height:var(--visible-height);max-width:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px max(6px,env(safe-area-inset-right)) 3px max(6px,env(safe-area-inset-left));overflow:hidden}
+.phone-landscape header{flex:0 0 30px;min-height:30px;width:100%;padding:0 3px;font-size:10px;letter-spacing:0}
+.phone-landscape header>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.phone-landscape header div{flex-shrink:0}
+.phone-landscape header button{padding:4px 10px;font-size:11px;min-height:28px}
+.phone-landscape .cast,.phone-landscape footer{display:none}
+.phone-landscape #game-wrap{width:var(--stage-width);flex:none;display:block;min-height:0;margin:auto auto 70px;border-radius:10px;animation:none;overflow:hidden}
+.phone-landscape #game{width:100%;height:auto;aspect-ratio:16/9}
+.phone-landscape #touch{position:fixed;display:flex;left:var(--visible-left);top:calc(var(--visible-top) + var(--visible-height) - 66px);right:auto;bottom:auto;width:var(--visible-width);height:66px;min-height:66px;padding:6px max(14px,env(safe-area-inset-right)) 6px max(14px,env(safe-area-inset-left));gap:12px;align-items:center;background:#21182ef5;border-top:1px solid #f5c8db65;z-index:5}
+.phone-landscape #touch button{height:52px;min-width:70px;padding:6px 16px;opacity:1;font-size:18px;border-radius:14px}
+.phone-landscape #touch button:last-child{min-width:120px;margin-left:auto}
+.phone-landscape .cinematic #touch{display:none}
+#game-wrap,header button,#touch,#touch *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#touch,#touch button{touch-action:none}

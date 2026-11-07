@@ -7,9 +7,9 @@ const path=require('node:path');
 function game(){
  const gradient={addColorStop(){}};
  const ctx=new Proxy({createLinearGradient:()=>gradient,createRadialGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:()=>{}});
- const element=()=>({className:'',innerHTML:'',hidden:false,width:960,height:540,style:{},classList:{add(){},remove(){}},getContext:()=>ctx,getBoundingClientRect:()=>({width:960}),appendChild(){},insertBefore(){},setAttribute(){},addEventListener(){}});
+ const element=()=>({className:'',innerHTML:'',hidden:false,width:960,height:540,style:{},classList:{add(){},remove(){},toggle(){}},getContext:()=>ctx,getBoundingClientRect:()=>({width:960}),appendChild(){},insertBefore(){},setAttribute(){},addEventListener(){}});
  const elements=new Map();
- const c=vm.createContext({console,Math,Number,String,Image:class {},window:{devicePixelRatio:1,addEventListener(){}},document:{querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s)},querySelectorAll:()=>[],createElement:element,addEventListener(){}},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},requestAnimationFrame(){},setInterval(){}});
+ const c=vm.createContext({console,Math,Number,String,Image:class {},navigator:{maxTouchPoints:0},window:{innerWidth:960,innerHeight:720,matchMedia:()=>({matches:false}),devicePixelRatio:1,addEventListener(){}},document:{body:element(),documentElement:{style:{setProperty(){}}},querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s)},querySelectorAll:()=>[],createElement:element,addEventListener(){}},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},requestAnimationFrame(){},setInterval(){}});
  for(const file of ['adventure.js','game.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),c,{filename:file});
  return code=>vm.runInContext(code,c);
 }
